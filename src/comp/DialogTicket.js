@@ -2,8 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import React, { useState } from 'react'
-import CheckIcon from '@mui/icons-material/Check';
-import DeleteIcon from '@mui/icons-material/Delete';
+
 import { updateStatusTicketSold } from '@/lib/conexionTickets';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -47,6 +46,31 @@ export default function DialogTicket({
 
         router.refresh()
     }
+    const handleClickCancel=async()=>{
+        const jsonToSend = {
+            id_ticket,
+            confirm : false
+        }
+        const response = await updateStatusTicketSold(jsonToSend);
+        const responseJSON = await response.json();
+        console.log(responseJSON);
+        
+        if (!response.ok) {
+            toast({
+                variant : 'destructive',
+                title : "Error",
+                description : "Algo salio mal en la API" 
+            })
+            return;
+        }
+        toast({
+            title : "Exito",
+            description : "Se confirmo la venta"
+        });
+
+        router.refresh()
+    }
+
     const handleClickShowEvidence=()=>{
         setShowEvidence(!showEvidence);
     }
@@ -91,7 +115,7 @@ export default function DialogTicket({
                     <Button variant="ghost" className="mt-4"  onClick={handleClickSave}>
                         Confirmar Compra
                     </Button>
-                    <Button className="mt-4">
+                    <Button className="mt-4" onClick={handleClickCancel}>
                         Cancelar Compra
                     </Button>
                 </div>

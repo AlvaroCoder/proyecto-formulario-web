@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://asme-backend.fly.dev";
 export async function getBookedTicketsHome(id_user=1) {
     return await fetch(`${BASE_URL}/home/booked_tickets/?id_user=${id_user}`,{
         method : 'GET'
