@@ -1,101 +1,219 @@
-import Image from "next/image";
+'use client'
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getSession } from '@/lib/authentication';
+import { getAvailablesTicketsHome, getBookedTicketsHome, getLastTicketSoldHome, getPendingTicketsHome, getSoldOutTicketsHome } from '@/lib/conexionTickets';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    const [userName, setUserName] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const IMG_LOGO_UDEP = "https://res.cloudinary.com/ddcb3fk7s/image/upload/v1723319328/udep_logo_eqcizp.png";
+  const IMG_LOGO_ASME = "https://res.cloudinary.com/ddcb3fk7s/image/upload/v1729865992/logo-ASME-1_qazzct.png";
+  const IMG_LOGO_COSAI = "https://res.cloudinary.com/dabyqnijl/image/upload/v1730493843/laztvzw7ytanqrdj161e.png";
+
+  const [raffleData, setRaffleData] = useState({
+    remainingRaffles: 0,
+    soldRaffles: 0,
+    lastSoldNumber: 0,
+    availableRaffles : 0
+  });
+  const [paymentConfirmations, setPaymentConfirmations] = useState([]);
+  const [pendingNumbers, setPendingNumbers] = useState([]);
+  const [availableTickets, setAvailableTickets] = useState([]);
+  const [raffleNumbers, setRaffleNumbers] = useState([]);
+  const [raffleCount, setRaffleCount] = useState(0);
+
+  useEffect(() => {
+    // Simulación de llamada a una API
+    const fetchData = async () => {
+        setLoading(true);
+
+        const session = await getSession();
+      const value = session?.user;            
+      const idUser = value?.user_data?.id_user;
+      setUserName(value?.user_data?.first_name)
+
+
+      const responseBookedTickets = await getBookedTicketsHome(idUser);
+      const responseBookedJSON = await responseBookedTickets.json();
+      
+      const responseSoldOutTicket = await getSoldOutTicketsHome(idUser);
+      const responseSoldOutTicketJSON = await responseSoldOutTicket.json();
+
+      const responseAvailableTickets = await getAvailablesTicketsHome(idUser);
+      const responseAvailableTicketsJSON = await responseAvailableTickets.json();
+        setAvailableTickets(responseAvailableTicketsJSON?.tickets_data?.tickets);
+
+        const responsePendingTickets = await getPendingTicketsHome(idUser);
+        const responsePendingTicketsJSON = await responsePendingTickets.json();
+
+        const responseLastNumSoldOutTickets = await getLastTicketSoldHome(idUser);
+        const responseLastNumSoldOutTicketJSON = await responseLastNumSoldOutTickets.json();
+
+      const raffleInfo = {
+        availableRaffles : responseAvailableTicketsJSON?.tickets_data?.amount,
+        remainingRaffles: responseBookedJSON?.tickets_data?.amount,
+        soldRaffles: responseSoldOutTicketJSON?.amount?.amount,
+        lastSoldNumber: responseLastNumSoldOutTicketJSON?.number ? parseInt(responseLastNumSoldOutTicketJSON?.number) : 0,
+      };
+
+
+      const pendingNumbersData = [
+        { id: 1, raffle: '1', number: 'N37001' },
+        { id: 2, raffle: '2', number: 'N37001' },
+        { id: 3, raffle: '3', number: 'N37001' },
+        { id: 4, raffle: '4', number: 'N37001' },
+        { id: 5, raffle: '5', number: 'N37001' },
+      ];
+
+      setRaffleData(raffleInfo);
+      setPaymentConfirmations(responsePendingTicketsJSON?.tickets_data?.tickets);
+      setPendingNumbers(pendingNumbersData);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+  useEffect(()=>{
+    setRaffleNumbers(availableTickets.slice(0, raffleCount));
+  },[raffleCount, availableTickets])
+  const handleRaffleCountChange=(e)=>{
+    const value = parseInt(e.target.value);
+    setRaffleCount(isNaN(value) ? 0 : value);
+  }
+  if (loading) {
+    return (<div><h1>Cargando ...</h1></div>)
+  }
+  return (
+    <div className='bg-gray-100 w-full h-full'>
+        <div className='h-20 bg-white w-full flex flex-row items-center justify-between px-8'>
+            <div className='flex flex-row'>
+              <Image
+                src={IMG_LOGO_UDEP}
+                width={200}
+                height={20}
+                alt='Logo UDEP'
+              />
+              <Image
+                src={IMG_LOGO_ASME}
+                width={120}
+                height={50}
+                alt='Logo ASME'
+              />
+            </div>
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src={IMG_LOGO_COSAI}
+              width={150}
+              height={50}
+              alt='Logo COSAI'
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="p-8 bg-gray-100 w-full h-screen">
+       <div className='flex flex-row items-center justify-between'>
+         
+        <h1 className="text-2xl font-bold mb-4">Bienvenido {userName}</h1>
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button variant="ghost" className="bg-blue-600 text-white px-4 py-2 rounded-lg float-right">
+                    Vender Rifa
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogTitle>Nueva Venta</DialogTitle>
+                <div className="w-full mx-auto py-2">
+                    <h1 className="text-lg font-semibold mb-4">Cantidad de Rifas</h1>
+                    <input
+                        type="number"
+                        onChange={handleRaffleCountChange}
+                        value={raffleCount}
+                        className="w-full p-2 border border-gray-300 rounded mb-4 text-center"
+                    />
+
+                    <h2 className="text-lg font-semibold mb-2">Números de las Rifas</h2>
+
+                    <ul className="mb-4 flex flex-row flex-wrap">
+                        {raffleNumbers.length > 0 ? (
+                        raffleNumbers.map((number, index) => (
+                            <li key={index} className="text-blue-600 p-2 ">
+                                Nro : {number?.number_ticket}  
+                            </li>
+                        ))
+                        ) : (
+                        <li className="text-gray-500">No hay números de rifas disponibles</li>
+                        )}
+                    </ul>
+                    <h2 className="text-lg font-semibold mb-2">Formulario de Registro</h2>
+                    <div className="w-full h-48 border border-gray-300 flex items-center justify-center text-gray-500 mb-6">
+                        No hay formulario para mostrar
+                    </div>
+
+                    <button className="w-full bg-[#084F96] text-white font-semibold py-2 rounded" >
+                        <Link href={"/generate-ticket"}>
+                        Generar Formulario
+                        </Link>
+                    </button>
+                    </div>
+            </DialogContent>
+        </Dialog>
+       </div>
+    
+        {/* Información de rifas */}
+        <div className="bg-gradient-to-r from-blue-200 to-blue-500 p-6 rounded-lg mb-6">
+          <h2 className="text-lg font-semibold">Información de rifas</h2>
+          <p className="text-sm text-gray-600 mb-4">Información relevante de las rifas que se están vendiendo</p>
+          <div className="flex justify-around">
+            <div className="text-center">
+              <p className="text-4xl font-bold">{raffleData.availableRaffles}</p>
+              <p>Rifas Disponibles</p>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold">{raffleData.remainingRaffles}</p>
+              <p>Rifas Pendientes</p>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold">{raffleData.soldRaffles}</p>
+              <p>Rifas Vendidas</p>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-bold">{raffleData.lastSoldNumber}</p>
+              <p>Último Nro Vendido</p>
+            </div>
+          </div>
+        </div>
+    
+        {/* Confirmaciones de pago */}
+        <div className="bg-white p-6 rounded-lg mb-6">
+          <h2 className="text-lg font-semibold">Confirmaciones de pago ({paymentConfirmations.length})</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Información de las rifas que están por ser confirmadas por el encargado
+          </p>
+          {paymentConfirmations?.map((confirmation, key) => (
+            <div key={key} className="flex items-center justify-between mb-2 p-2 border rounded">
+              <div>
+                <p className="font-semibold">Transacción {}</p>
+                <p>Tickets: {}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button className="text-blue-500">
+
+                </button>
+                <button className="text-red-500">
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+    
+        <footer className="mt-8 text-center text-gray-500">
+          ©2024 COSAI Brand - Todos los derechos reservados.
+        </footer>
+      </div>
     </div>
   );
 }
