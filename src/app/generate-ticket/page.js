@@ -1,7 +1,7 @@
 'use client'
 import Image from 'next/image'
-import { useRouter, useSearchParams } from 'next/navigation'
-import React from 'react'
+import {  useSearchParams } from 'next/navigation'
+import React, { Suspense } from 'react'
 import {QRCodeSVG} from 'qrcode.react'
 import Link from 'next/link'
 
@@ -14,7 +14,8 @@ export default function page() {
     window.open(url, '_blank')
   }
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+   <Suspense>
+     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
       <h2 className="text-lg font-semibold text-center mb-4">Página Rifa</h2>
 
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm">
@@ -51,5 +52,6 @@ export default function page() {
         ©2024 COSAI Brand. Todos los derechos reservados.
       </footer>
     </div>
+   </Suspense>
   )
 }
