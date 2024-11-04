@@ -1,18 +1,24 @@
 'use client'
+import Loading from '@/comp/loading';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { getSession } from '@/lib/authentication';
-import { getAvailablesTicketsHome, getBookedTicketsHome, getLastTicketSoldHome, getPendingTicketsHome, getSoldOutTicketsHome } from '@/lib/conexionTickets';
+import { getAvailablesTicketsHome, getBookedTicketsHome, getLastTicketSoldHome, getPendingTicketsHome, getQrLinkFormUser, getSoldOutTicketsHome } from '@/lib/conexionTickets';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DialogTicket from '@/comp/DialogTicket';
 
 export default function Home() {
+  const router = useRouter();
 
-    const [userName, setUserName] = useState(null);
-    const [loading, setLoading] = useState(false);
+  const [userName, setUserName] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    const IMG_LOGO_UDEP = "https://res.cloudinary.com/ddcb3fk7s/image/upload/v1723319328/udep_logo_eqcizp.png";
+  const IMG_LOGO_UDEP = "https://res.cloudinary.com/ddcb3fk7s/image/upload/v1723319328/udep_logo_eqcizp.png";
   const IMG_LOGO_ASME = "https://res.cloudinary.com/ddcb3fk7s/image/upload/v1729865992/logo-ASME-1_qazzct.png";
   const IMG_LOGO_COSAI = "https://res.cloudinary.com/dabyqnijl/image/upload/v1730493843/laztvzw7ytanqrdj161e.png";
 
@@ -27,16 +33,16 @@ export default function Home() {
   const [availableTickets, setAvailableTickets] = useState([]);
   const [raffleNumbers, setRaffleNumbers] = useState([]);
   const [raffleCount, setRaffleCount] = useState(0);
-
   useEffect(() => {
     // Simulación de llamada a una API
     const fetchData = async () => {
-        setLoading(true);
+      setLoading(true);
 
-        const session = await getSession();
+      const session = await getSession();
       const value = session?.user;            
       const idUser = value?.user_data?.id_user;
-      setUserName(value?.user_data?.first_name)
+      const username = value?.user_data?.first_name + " "+value?.user_data?.last_name
+      setUserName(username);
 
 
       const responseBookedTickets = await getBookedTicketsHome(idUser);
@@ -47,13 +53,13 @@ export default function Home() {
 
       const responseAvailableTickets = await getAvailablesTicketsHome(idUser);
       const responseAvailableTicketsJSON = await responseAvailableTickets.json();
-        setAvailableTickets(responseAvailableTicketsJSON?.tickets_data?.tickets);
+      setAvailableTickets(responseAvailableTicketsJSON?.tickets_data?.tickets);
 
-        const responsePendingTickets = await getPendingTicketsHome(idUser);
-        const responsePendingTicketsJSON = await responsePendingTickets.json();
+      const responsePendingTickets = await getPendingTicketsHome(idUser);
+      const responsePendingTicketsJSON = await responsePendingTickets.json();
 
-        const responseLastNumSoldOutTickets = await getLastTicketSoldHome(idUser);
-        const responseLastNumSoldOutTicketJSON = await responseLastNumSoldOutTickets.json();
+      const responseLastNumSoldOutTickets = await getLastTicketSoldHome(idUser);
+      const responseLastNumSoldOutTicketJSON = await responseLastNumSoldOutTickets.json();
 
       const raffleInfo = {
         availableRaffles : responseAvailableTicketsJSON?.tickets_data?.amount,
@@ -61,7 +67,6 @@ export default function Home() {
         soldRaffles: responseSoldOutTicketJSON?.amount?.amount,
         lastSoldNumber: responseLastNumSoldOutTicketJSON?.number ? parseInt(responseLastNumSoldOutTicketJSON?.number) : 0,
       };
-
 
       const pendingNumbersData = [
         { id: 1, raffle: '1', number: 'N37001' },
@@ -81,13 +86,34 @@ export default function Home() {
   }, []);
   useEffect(()=>{
     setRaffleNumbers(availableTickets.slice(0, raffleCount));
-  },[raffleCount, availableTickets])
+  },[raffleCount, availableTickets]);
+
   const handleRaffleCountChange=(e)=>{
     const value = parseInt(e.target.value);
     setRaffleCount(isNaN(value) ? 0 : value);
   }
+  const handleClickSendForm=async()=>{
+    
+    const newListTickets = raffleNumbers.map((item)=>({id_ticket : item?.id_ticket, number_ticket: String(item?.number_ticket)}))    
+    const jsonToSend ={
+      tickets_data : newListTickets,
+      seller : userName
+    }
+    setLoading(true)
+    const response = await getQrLinkFormUser(jsonToSend);
+    const responseJSON = await response.json();
+    const dataJSON = {
+      ...jsonToSend,
+      image_qr : responseJSON?.qr,
+      link_form : responseJSON?.link
+    }
+    
+    setLoading(false)
+    const dataString = encodeURIComponent(JSON.stringify(dataJSON))
+    router.push(`/generate-ticket?data=${dataString}`)    
+  }
   if (loading) {
-    return (<div><h1>Cargando ...</h1></div>)
+    return (<Loading/>)
   }
   return (
     <div className='bg-gray-100 w-full h-full'>
@@ -98,12 +124,14 @@ export default function Home() {
                 width={200}
                 height={20}
                 alt='Logo UDEP'
+                priority={false}
               />
               <Image
                 src={IMG_LOGO_ASME}
                 width={120}
                 height={50}
                 alt='Logo ASME'
+                priority={false}
               />
             </div>
             <Image
@@ -111,9 +139,10 @@ export default function Home() {
               width={150}
               height={50}
               alt='Logo COSAI'
+              priority
             />
         </div>
-        <div className="p-8 bg-gray-100 w-full h-screen">
+        <div className="p-8 bg-gray-100 w-full min-h-screen">
        <div className='flex flex-row items-center justify-between'>
          
         <h1 className="text-2xl font-bold mb-4">Bienvenido {userName}</h1>
@@ -152,10 +181,8 @@ export default function Home() {
                         No hay formulario para mostrar
                     </div>
 
-                    <button className="w-full bg-[#084F96] text-white font-semibold py-2 rounded" >
-                        <Link href={"/generate-ticket"}>
-                        Generar Formulario
-                        </Link>
+                    <button className="w-full bg-[#084F96] text-white font-semibold py-2 rounded" onClick={handleClickSendForm}>
+                      Generar Formulario
                     </button>
                     </div>
             </DialogContent>
@@ -166,7 +193,7 @@ export default function Home() {
         <div className="bg-gradient-to-r from-blue-200 to-blue-500 p-6 rounded-lg mb-6">
           <h2 className="text-lg font-semibold">Información de rifas</h2>
           <p className="text-sm text-gray-600 mb-4">Información relevante de las rifas que se están vendiendo</p>
-          <div className="flex justify-around">
+          <div className="flex justify-around flex-wrap">
             <div className="text-center">
               <p className="text-4xl font-bold">{raffleData.availableRaffles}</p>
               <p>Rifas Disponibles</p>
@@ -193,19 +220,7 @@ export default function Home() {
             Información de las rifas que están por ser confirmadas por el encargado
           </p>
           {paymentConfirmations?.map((confirmation, key) => (
-            <div key={key} className="flex items-center justify-between mb-2 p-2 border rounded">
-              <div>
-                <p className="font-semibold">Transacción {}</p>
-                <p>Tickets: {}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="text-blue-500">
-
-                </button>
-                <button className="text-red-500">
-                </button>
-              </div>
-            </div>
+            <DialogTicket key={key} {...confirmation} />
           ))}
         </div>
         

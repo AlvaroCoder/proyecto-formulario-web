@@ -1,8 +1,12 @@
 'use client'
+import { useToast } from '@/hooks/use-toast';
 import { login } from '@/lib/authentication';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 export default function page() {
+  const router = useRouter();
+  const {toast} = useToast()
     const [dni, setDni] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -21,19 +25,28 @@ export default function page() {
       setError("");
   
       if (!validateDNI(dni)) {
-        setError("El DNI debe tener 8 dígitos numéricos.");
+        toast({
+          variant:"destructive",
+          title : "Error",
+          description : "Numero de DNI incorrecto"
+        })
         return;
       }
-  
       setLoading(true);
       try {
         const response = await login(String(dni));
-        console.log(response.message);
-        
-        // Supongamos que la autenticación es exitosa
-        alert("Inicio de sesión exitoso.");
+        router.push("/")
+        toast({
+          title :"Exito",
+          description : "Incio de sesion exitoso"
+        });
+
       } catch (error) {
-        setError("Hubo un problema con el inicio de sesión.");
+        toast({
+          variant:"destructive",
+          title:"Error",
+          description : "Sucedio un problema con el inicio de sesión."
+        })
       } finally {
         setLoading(false);
       }
