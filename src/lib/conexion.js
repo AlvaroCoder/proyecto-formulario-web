@@ -1,4 +1,4 @@
-const BASE_URL = "https://asme-backend.fly.dev";
+const BASE_URL = "http://200.48.235.251:6969";
 export async function conexionLogin(dni="") {
     return fetch(`${BASE_URL}/login`,{
         method : 'POST',
