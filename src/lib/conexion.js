@@ -1,4 +1,4 @@
-const BASE_URL = "http://200.48.235.251:6969";
+const BASE_URL = "https://asme-backend-l2jt.onrender.com";
 export async function conexionLogin(dni="") {
     return fetch(`${BASE_URL}/login`,{
         method : 'POST',
