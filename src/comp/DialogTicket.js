@@ -20,6 +20,8 @@ export default function DialogTicket({
     evidence
 }) {
     const [showEvidence, setShowEvidence] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const {toast} = useToast();
     const router = useRouter();
     const handleClickSave=async()=>{
@@ -46,6 +48,7 @@ export default function DialogTicket({
         router.refresh()
     }
     const handleClickCancel=async()=>{
+
         const jsonToSend = {
             id_ticket,
             confirm : false
@@ -73,7 +76,7 @@ export default function DialogTicket({
         setShowEvidence(!showEvidence);
     }
   return (
-    <Dialog className="max-h-screen overflow-y-auto">
+    <Dialog className="max-h-screen overflow-y-auto" >
         <DialogTrigger  asChild>
             <Button className="w-full h-60 flex items-center justify-between mb-2 py-4 border rounded" variant="ghost">
                 <div>
@@ -110,10 +113,10 @@ export default function DialogTicket({
                         <p>Mostrar Imagen</p>
                     </button>}
                 <div className='flex flex-col mt-12 '>
-                    <Button variant="ghost" className="mt-4"  onClick={handleClickSave}>
+                    <Button variant="ghost" className="mt-4"  onClick={handleClickSave} >
                         Confirmar Compra
                     </Button>
-                    <Button className="mt-4" onClick={handleClickCancel}>
+                    <Button className="mt-4" onClick={handleClickCancel} >
                         Cancelar Compra
                     </Button>
                 </div>

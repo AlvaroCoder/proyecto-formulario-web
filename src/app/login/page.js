@@ -1,6 +1,7 @@
 'use client'
 import { useToast } from '@/hooks/use-toast';
 import { login } from '@/lib/authentication';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -61,7 +62,33 @@ export default function page() {
       }
     };
   return (
-<div className="flex justify-center items-center h-screen bg-gray-100">
+<div className="flex flex-col justify-center items-center h-screen bg-gray-100">
+    <div className='grid gap-2 grid-cols-3  mb-10'>
+
+      <Image
+        src={"https://res.cloudinary.com/ddcb3fk7s/image/upload/v1729865992/logo-ASME-1_qazzct.png"}
+        alt='Logo de ASME'
+        width={150}
+        height={100}
+        className='place-self-center'
+      />
+      <Image
+        src={"https://res.cloudinary.com/ddcb3fk7s/image/upload/v1723319328/udep_logo_eqcizp.png"}
+        alt='Logo de la UDEP'
+        width={300}
+        height={100}
+        className='place-self-center'
+
+      />
+      <Image
+        src={"https://res.cloudinary.com/ddcb3fk7s/image/upload/v1731603076/Navy_Blue_and_White_Futuristic_Tech_Company_Presentation_1_zpaubk.png"}
+        alt='Logo de la COSAI'
+        width={200}
+        height={100}
+        className='place-self-center'
+
+      />
+    </div>
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md p-8 bg-white shadow-md rounded-lg"
