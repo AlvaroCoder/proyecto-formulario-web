@@ -15,9 +15,9 @@ export default function page() {
       setDni(e.target.value);
     };
   
-    const validateDNI = (dni) => {
+    const validateDNI = (dni='') => {
       const dniRegex = /^[0-9]{8}$/;
-      return dniRegex.test(dni);
+      return dniRegex.test(dni) || dni.trim() === "001906490";
     };
   
     const handleSubmit = async (e) => {
@@ -33,8 +33,17 @@ export default function page() {
         return;
       }
       setLoading(true);
+      
       try {
         const response = await login(String(dni));
+        if (response.error) {
+          toast({
+            title :"Error",
+            variant : "destructive",
+            description : `Error : ${response.message}`
+          })
+          return;
+        }
         router.push("/")
         toast({
           title :"Exito",

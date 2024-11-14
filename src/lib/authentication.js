@@ -59,7 +59,7 @@ export async function login(dni="") {
     }
 }
 export async function logout() {
-   await  cookies().set("session", "", {expires:new Date(0)}) 
+    (await cookies()).set("session", "", {expires:new Date(0)}) 
 }
 
 export async function getSession() {

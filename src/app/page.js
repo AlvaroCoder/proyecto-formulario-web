@@ -2,15 +2,16 @@
 import Loading from '@/comp/loading';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { getSession } from '@/lib/authentication';
+import { getSession, logout } from '@/lib/authentication';
 import { getAvailablesTicketsHome, getBookedTicketsHome, getLastTicketSoldHome, getPendingTicketsHome, getQrLinkFormUser, getSoldOutTicketsHome } from '@/lib/conexionTickets';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import CheckIcon from '@mui/icons-material/Check';
-import DeleteIcon from '@mui/icons-material/Delete';
 import DialogTicket from '@/comp/DialogTicket';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import PersonIcon from '@mui/icons-material/Person';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function Home() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function Home() {
   const [availableTickets, setAvailableTickets] = useState([]);
   const [raffleNumbers, setRaffleNumbers] = useState([]);
   const [raffleCount, setRaffleCount] = useState(0);
+  const [groupName, setGroupName] = useState("");
   useEffect(() => {
     // Simulación de llamada a una API
     const fetchData = async () => {
@@ -42,8 +44,9 @@ export default function Home() {
       const value = session?.user;            
       const idUser = value?.user_data?.id_user;
       const username = value?.user_data?.first_name + " "+value?.user_data?.last_name
+      const group_name = value?.user_data?.team_name
       setUserName(username);
-
+      setGroupName(group_name);
 
       const responseBookedTickets = await getBookedTicketsHome(idUser);
       const responseBookedJSON = await responseBookedTickets.json();
@@ -68,17 +71,9 @@ export default function Home() {
         lastSoldNumber: responseLastNumSoldOutTicketJSON?.number ? parseInt(responseLastNumSoldOutTicketJSON?.number) : 0,
       };
 
-      const pendingNumbersData = [
-        { id: 1, raffle: '1', number: 'N37001' },
-        { id: 2, raffle: '2', number: 'N37001' },
-        { id: 3, raffle: '3', number: 'N37001' },
-        { id: 4, raffle: '4', number: 'N37001' },
-        { id: 5, raffle: '5', number: 'N37001' },
-      ];
-
       setRaffleData(raffleInfo);
       setPaymentConfirmations(responsePendingTicketsJSON?.tickets_data?.tickets);
-      setPendingNumbers(pendingNumbersData);
+
       setLoading(false);
     };
 
@@ -112,6 +107,10 @@ export default function Home() {
     const dataString = encodeURIComponent(JSON.stringify(dataJSON))
     router.push(`/generate-ticket?data=${dataString}`)    
   }
+  const handleClickSignOut=async()=>{
+    await logout();
+    router.push(`/login`);
+  }
   if (loading) {
     return (<Loading/>)
   }
@@ -134,21 +133,45 @@ export default function Home() {
                 priority={false}
               />
             </div>
+           <div className='flex flex-row items-center justify-center'>
             <Image
-              src={IMG_LOGO_COSAI}
-              width={150}
-              height={50}
-              alt='Logo COSAI'
-              priority
-            />
+                src={IMG_LOGO_COSAI}
+                width={150}
+                height={50}
+                alt='Logo COSAI'
+                priority
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className='font-bold p-2 rounded-2xl border-black border-2 flex flex-row'>
+                  <h1 className=''><PersonIcon/></h1>
+                  <h1 className='md:block hidden'>{userName}</h1>
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+                  <DropdownMenuSeparator/>
+                  <DropdownMenuItem>
+                  <Button  variant="ghost  " onClick={handleClickSignOut}>
+                    <PowerSettingsNewIcon/>
+                    <h1>Cerrar Sesión</h1> 
+                  </Button>
+                  </DropdownMenuItem>
+                  
+                </DropdownMenuContent>
+              </DropdownMenu>
+           </div>
         </div>
         <div className="p-8 bg-gray-100 w-full min-h-screen">
        <div className='flex flex-row items-center justify-between'>
          
-        <h1 className="text-2xl font-bold mb-4">Bienvenido {userName}</h1>
+        <div className='flex flex-col justify-center my-4' >
+        <h1 className="text-2xl font-bold">Bienvenido {userName}</h1>
+        <h1 className='py-2 rounded-xl bg-blue-800 text-white w-fit text-sm px-4'>{groupName}</h1>
+        </div>
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="bg-blue-600 text-white px-4 py-2 rounded-lg float-right">
+                <Button variant="ghost" className="bg-blue-600 border-2 border-blue-700 text-white px-4 py-2 rounded-xl float-right">
                     Vender Rifa
                 </Button>
             </DialogTrigger>

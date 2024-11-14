@@ -29,7 +29,6 @@ export default function DialogTicket({
         }
         const response = await updateStatusTicketSold(jsonToSend);
         const responseJSON = await response.json();
-        console.log(responseJSON);
         
         if (!response.ok) {
             toast({
@@ -53,7 +52,6 @@ export default function DialogTicket({
         }
         const response = await updateStatusTicketSold(jsonToSend);
         const responseJSON = await response.json();
-        console.log(responseJSON);
         
         if (!response.ok) {
             toast({
@@ -65,7 +63,7 @@ export default function DialogTicket({
         }
         toast({
             title : "Exito",
-            description : "Se confirmo la venta"
+            description : "Se cancelo la venta"
         });
 
         router.refresh()
