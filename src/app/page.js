@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/
 import { getSession, logout } from '@/lib/authentication';
 import { getAvailablesTicketsHome, getBookedTicketsHome, getLastTicketSoldHome, getPendingTicketsHome, getQrLinkFormUser, getSoldOutTicketsHome } from '@/lib/conexionTickets';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DialogTicket from '@/comp/DialogTicket';
@@ -30,11 +29,11 @@ export default function Home() {
     availableRaffles : 0
   });
   const [paymentConfirmations, setPaymentConfirmations] = useState([]);
-  const [pendingNumbers, setPendingNumbers] = useState([]);
   const [availableTickets, setAvailableTickets] = useState([]);
   const [raffleNumbers, setRaffleNumbers] = useState([]);
   const [raffleCount, setRaffleCount] = useState(0);
   const [groupName, setGroupName] = useState("");
+  const [dniUser, setDniUser] = useState("");
   useEffect(() => {
     // Simulación de llamada a una API
     const fetchData = async () => {
@@ -45,8 +44,11 @@ export default function Home() {
       const idUser = value?.user_data?.id_user;
       const username = value?.user_data?.first_name + " "+value?.user_data?.last_name
       const group_name = value?.user_data?.team_name
+      const dni = value?.user_data?.dni
+      
       setUserName(username);
       setGroupName(group_name);
+      setDniUser(dni);
 
       const responseBookedTickets = await getBookedTicketsHome(idUser);
       const responseBookedJSON = await responseBookedTickets.json();
@@ -116,14 +118,15 @@ export default function Home() {
   }
   return (
     <div className='bg-gray-100 w-full h-full'>
-        <div className='h-20 bg-white w-full flex flex-row items-center justify-between px-8'>
-            <div className='flex flex-row'>
+        <div className='h-auto md:h-20 bg-white w-full flex flex-row items-center justify-between px-8'>
+            <div className='flex flex-col md:flex-row '>
               <Image
                 src={IMG_LOGO_UDEP}
                 width={200}
                 height={20}
                 alt='Logo UDEP'
                 priority={false}
+                
               />
               <Image
                 src={IMG_LOGO_ASME}
@@ -131,6 +134,7 @@ export default function Home() {
                 height={50}
                 alt='Logo ASME'
                 priority={false}
+                className='ml-9'
               />
             </div>
            <div className='flex flex-row items-center justify-center'>
@@ -166,7 +170,7 @@ export default function Home() {
        <div className='flex flex-row items-center justify-between'>
          
         <div className='flex flex-col justify-center my-4' >
-        <h1 className="text-2xl font-bold">Bienvenido {userName}</h1>
+        <h1 className="text-2xl font-bold">Bienvenido {dniUser==="72778083"? "Chino 🤍 al ritmo de SAC" : (dniUser === "73885578" ? "El faraon love shady 🤍" : (dniUser==="001906490" ? "Mi parce 🤍" : userName))}</h1>
         <h1 className='py-2 rounded-xl bg-blue-800 text-white w-fit text-sm px-4'>{groupName}</h1>
         </div>
         <Dialog>
