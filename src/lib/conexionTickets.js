@@ -1,4 +1,4 @@
-const BASE_URL = "https://asme-backend-l2jt.onrender.com";
+const BASE_URL = process.env.BASE_URL;
 export async function getBookedTicketsHome(id_user=1) {
     return await fetch(`${BASE_URL}/home/booked_tickets/?id_user=${id_user}`,{
         method : 'GET'

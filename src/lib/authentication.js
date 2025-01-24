@@ -3,8 +3,8 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const secretKey="asme";
-const URL_LOGIN_USER="https://asme-backend-l2jt.onrender.com/login";
+const secretKey=process.env.SECRET_TOKEN;
+const URL_LOGIN_USER=process.env.URL_LOGIN;
 
 const key=new TextEncoder().encode(secretKey);
 const timeExpiration =  30 * 60 * 1000;

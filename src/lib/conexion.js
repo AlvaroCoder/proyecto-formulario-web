@@ -1,4 +1,4 @@
-const BASE_URL = "https://asme-backend-l2jt.onrender.com";
+const BASE_URL = process.env.BASE_URL;
 export async function conexionLogin(dni="") {
     return fetch(`${BASE_URL}/login`,{
         method : 'POST',
